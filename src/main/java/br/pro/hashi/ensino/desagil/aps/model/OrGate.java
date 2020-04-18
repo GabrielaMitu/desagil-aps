@@ -1,44 +1,41 @@
 package br.pro.hashi.ensino.desagil.aps.model;
 
-public class OrGate extends Gate {
-    private final NandGate nandOne;
-    private final NandGate nandTwo;
-    private final NandGate nandTree;
 
+public class OrGate extends Gate {
+    private final NandGate nandTop;
+    private final NandGate nandBottom;
+    private final NandGate nandRight;
 
     public OrGate() {
-        super("OR", 1);
-        nandOne = new NandGate();
-        nandTwo = new NandGate();
-        nandTree = new NandGate();
-        nandTree.connect(0, nandOne);
-        nandTree.connect(1, nandTwo);
+        super("OR", 2);
+
+        nandTop = new NandGate();
+
+        nandBottom = new NandGate();
+
+        nandRight = new NandGate();
+        nandRight.connect(0, nandTop);
+        nandRight.connect(1, nandBottom);
     }
 
     @Override
     public boolean read() {
-        return nandTree.read();
+        return nandRight.read();
     }
 
     @Override
     public void connect(int inputIndex, Emitter emitter) {
-        if (inputIndex < 0 || inputIndex > 1) {
-            throw new IndexOutOfBoundsException(inputIndex);
+        switch (inputIndex) {
+            case 0:
+                nandTop.connect(0, emitter);
+                nandTop.connect(1, emitter);
+                break;
+            case 1:
+                nandBottom.connect(0, emitter);
+                nandBottom.connect(1, emitter);
+                break;
+            default:
+                throw new IndexOutOfBoundsException(inputIndex);
         }
-
-
-        if (inputIndex == 0) {
-            nandOne.connect(0, emitter);
-            //nandOne.connect(1, emitter);
-            nandOne.connect(1, emitter);
-
-        } else {
-
-            nandTwo.connect(0, emitter);
-
-            //nandOne.connect(1, emitter);
-            nandTwo.connect(1, emitter);
-        }
-
     }
 }
