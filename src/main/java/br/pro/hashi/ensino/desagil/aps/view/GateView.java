@@ -1,6 +1,7 @@
 package br.pro.hashi.ensino.desagil.aps.view;
 
 import br.pro.hashi.ensino.desagil.aps.model.Gate;
+import br.pro.hashi.ensino.desagil.aps.model.Light;
 import br.pro.hashi.ensino.desagil.aps.model.Switch;
 
 import javax.swing.*;
@@ -9,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 
 //import br.pro.hashi.ensino.desagil.crossover.model.Calculator;
 
@@ -23,11 +25,15 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
     // private final JTextField weightField;
     //private final JTextField radiusField;
     private final JCheckBox[] entradas;
-    private final JCheckBox outputBox;
+    //private final JCheckBox outputBox;
     private final Switch[] switches;
-    // private final Image image;
+    private final Light lights;
+
+    private final Image image;
     // Novos atributos necessários para esta versão da interface.
     private Color color;
+    private Color gateColor;
+
 
     public GateView(Gate gate) {
         super();
@@ -39,54 +45,40 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
         int inputSize = gate.getInputSize();
         entradas = new JCheckBox[inputSize];
         switches = new Switch[inputSize];
+        lights = new Light(255, 0, 0);
+
 
         for (int i = 0; i < inputSize; i++) {
             entradas[i] = new JCheckBox();
             switches[i] = new Switch();
+            lights.connect(0, gate);
+
             gate.connect(i, switches[i]);
         }
 
-        outputBox = new JCheckBox();
 
-        JLabel entrada = new JLabel("Entrada");
-        JLabel saida = new JLabel("Saída");
+        int y_out = 183;
 
         int x = 15;
-        int y = 30;
+        int y;
         int w = 50;
         int h = 50;
-        int incremento = 75;
+        if (inputSize == 1) {
+            y = y_out;
+            // se só tiver uma entrada, ela fica na mesma altura da saída
+        } else {
+            y = 135;
+        }
+        int incremento = 66;
         for (JCheckBox inputBox : entradas) {
             add(inputBox, x, y, w, h);
             y += incremento;
-
         }
-
-        int x_out = 15;
-        int y_out = 200;
-        int w_out = 50;
-        int h_out = 50;
-        add(outputBox, x_out, y_out, w_out, h_out);
 
 
         for (JCheckBox inputbox : entradas) {
             inputbox.addActionListener(this);
         }
-        outputBox.setEnabled(false);
-        update();
-
-
-        int xe = 5;
-        int ye = 5;
-        int we = 120;
-        int he = 40;
-        add(entrada, xe, ye, we, he);
-
-        int xs = 5;
-        int ys = 175;
-        int ws = 120;
-        int hs = 40;
-        add(saida, xs, ys, ws, hs);
 
 
         // Toda componente Swing tem uma lista de observadores
@@ -97,6 +89,17 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
         // do tipo MouseListener como parâmetro. É por isso que
         // adicionamos o "implements MouseListener" lá em cima.
         addMouseListener(this);
+
+
+        // Carregando as imagens das portas
+        String name = gate.toString() + ".png";
+        URL url = getClass().getClassLoader().getResource(name);
+        image = getToolkit().getImage(url);
+//fonte das imagens:
+        //https://bmet.fandom.com/wiki/Logic_Gates
+
+        update();
+
 
     }
 
@@ -109,11 +112,12 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
             }
         }
 
-        boolean result = gate.read();
-        System.out.println(result);
 
-        outputBox.setSelected(result);
+        gateColor = lights.getColor();
+        System.out.println(gate.read());
+
     }
+
 
     @Override
     public void actionPerformed(ActionEvent event) {
@@ -123,15 +127,23 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
     @Override
     public void mouseClicked(MouseEvent event) {
 
+
         // Descobre em qual posição o clique ocorreu.
         int x = event.getX();
         int y = event.getY();
 
-        // Se o clique foi dentro do quadrado colorido...
-        if (x >= 210 && x < 235 && y >= 311 && y < 336) {
+        // Se o clique foi dentro do círculo colorido...
+        int x_out = 168;
+        int y_out = 193;
+        int h_out = 35;
+        if (((x - x_out) * (x - x_out) + (y - y_out) * (y - y_out)) < ((h_out / 2) * (h_out / 2))) {
+            update();
+
 
             // ...então abrimos a janela seletora de cor...
             color = JColorChooser.showDialog(this, null, color);
+
+            lights.setColor(color);
 
             // ...e chamamos repaint para atualizar a tela.
             repaint();
@@ -175,16 +187,25 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
         // o caso nos Desafios. Agora é preciso desenhar também
         // componentes internas, e isso é feito pela superclasse.
         super.paintComponent(g);
+        int x_out = 150;
+        int y_out = 176;
+        int w_out = 35;
+        int h_out = 35;
+
 
         // Desenha a imagem, passando sua posição e seu tamanho.
-        //g.drawImage(image, 10, 80, 221, 221, this);
+        g.drawImage(image, 10, 80, 221, 221, this);
 
-        // Desenha um quadrado cheio.
-        g.setColor(color);
-        g.fillRect(210, 311, 25, 25);
+        gateColor = lights.getColor();
+        g.setColor(gateColor);
+        g.fillOval(x_out, y_out, w_out, h_out);
+        repaint();
+
 
         // Linha necessária para evitar atrasos
         // de renderização em sistemas Linux.
         getToolkit().sync();
     }
 }
+
+//https://www.tutorialspoint.com/how-can-we-add-insert-a-jcheckbox-inside-a-jtable-cell-in-java

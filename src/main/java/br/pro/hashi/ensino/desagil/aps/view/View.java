@@ -24,6 +24,7 @@ public class View extends JPanel implements ActionListener {
     private final JComboBox<Gate> menu;
     private GateView gateView;
 
+
     // O construtor recebe uma lista de calculadoras, que
     // devem ser adicionadas ao menu. O menu consegue mostrar
     // os nomes das calculadoras graças ao método toString.
