@@ -57,7 +57,7 @@ public class GateView extends FixedPanel implements ActionListener, MouseListene
         }
 
 
-        int y_out = 183;
+        int y_out = 176;
 
         int x = 15;
         int y;
